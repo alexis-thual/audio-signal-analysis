@@ -1,6 +1,11 @@
+
+import sys
 import wave
-import numpy as np
-from math import floor
+
+import numpy                as np
+import matplotlib.pyplot    as plt
+import scipy.io.wavfile     as spw
+
 
 class FrequencyEstimator():
     def __init__(self, frames, frameRate, verbose=False):
@@ -10,11 +15,11 @@ class FrequencyEstimator():
         self.H = 4
         self.frameRate = frameRate
 
-        self.N = int(floor(0.7 * frameRate))
+        self.N = int(0.7 * frameRate)
         self.Nfft = self.nextPower(self.N, 2)
         self.dFmin = frameRate / self.N
 
-        offset = int(floor(0.1 * frameRate))
+        offset = int(0.1 * frameRate)
         self.x = np.array(frames[offset:offset + self.N]) * np.hamming(self.N)
         self.fft = np.fft.fft(self.x, n=self.Nfft)
 
@@ -28,7 +33,7 @@ class FrequencyEstimator():
     def computeProduct(self):
         '''Computes the spectral product.'''
 
-        self.R = int(floor(self.Nfft / 2 / self.H + 1))
+        self.R = int(self.Nfft / 2 / self.H + 1)
         self.p = np.ones(self.R)
 
         if self.verbose:
@@ -41,8 +46,8 @@ class FrequencyEstimator():
     def findMax(self):
         '''Computes the maximal frequency of the spectral product.'''
 
-        Nmin = int(floor(self.Fmin / self.frameRate * self.Nfft))
-        Nmax = min(self.R, int(floor(self.Fmax / self.frameRate * self.Nfft)))
+        Nmin = int(self.Fmin / self.frameRate * self.Nfft)
+        Nmax = min(self.R, int(self.Fmax / self.frameRate * self.Nfft))
 
         if self.verbose:
             print('Nmin: {}'.format(str(Nmin)))
@@ -53,8 +58,10 @@ class FrequencyEstimator():
 
         return f
 
+
 if __name__ == '__main__':
-    with wave.open('./sons_multipitch/A3_piano.wav') as s:
+
+    with wave.open(sys.argv[1]) as s:
         frames = []
         frame = s.readframes(1)
         while frame:
@@ -63,9 +70,25 @@ if __name__ == '__main__':
             frames.append(i)
             frame = s.readframes(1)
 
-        frameRate = s.getframerate()
-        frequencyEstimator = FrequencyEstimator(frames, frameRate, verbose=True)
 
-        frequencyEstimator.computeProduct()
-        f0 = frequencyEstimator.findMax()
-        print('Frequence fondamentale : {}'.format(str(f0)))
+    print("with scipy")
+    rate, frames2 = spw.read(sys.argv[1])
+    frameRate = s.getframerate()
+    frequencyEstimator = FrequencyEstimator(frames2, frameRate, verbose=True)
+
+    frequencyEstimator.computeProduct()
+    f0 = frequencyEstimator.findMax()
+    print('Frequence fondamentale : {}'.format(str(f0)))
+
+    plt.figure() 
+    plt.subplot(121) ; plt.plot(frames)
+    plt.subplot(122) ; plt.plot(frames2)
+    plt.tight_layout() ; plt.show()
+
+    print("homecooked")
+    frameRate = s.getframerate()
+    frequencyEstimator = FrequencyEstimator(frames2, frameRate, verbose=True)
+
+    frequencyEstimator.computeProduct()
+    f0 = frequencyEstimator.findMax()
+    print('Frequence fondamentale : {}'.format(str(f0)))
