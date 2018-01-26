@@ -105,7 +105,13 @@ class FrequencyEstimator():
 
 
 if __name__ == '__main__':
-    with wave.open('./tp1/sons_multipitch/A3_piano.wav') as s:
+    fileName = './tp1/sons_multipitch/A3_piano.wav'
+    # fileName = './tp1/sons_multipitch/E4_oboe.wav'
+    # fileName = './tp1/sons_multipitch/A3A4_piano.wav'
+    # fileName = './tp1/sons_multipitch/A3A4A5_duo.wav'
+    # fileName = './tp1/sons_multipitch/A3C4E4G4_piano.wav'
+
+    with wave.open(fileName) as s:
         frames = []
         frame = s.readframes(1)
         while frame:
@@ -121,7 +127,7 @@ if __name__ == '__main__':
         shouldStop = frequencyEstimator.shouldStop()
 
         k = 0
-        while not shouldStop and k < 10:
+        while not shouldStop and k < 8:
             frequencyEstimator.computeProduct()
             f0 = frequencyEstimator.findMax()
             frequencyEstimator.eliminateFrequency(f0)
